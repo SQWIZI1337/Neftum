@@ -1,0 +1,60 @@
+# HG changeset patch
+# User BananaVodka@Valera
+# Date 1329557811 -14400
+# Node ID 14b1cfd493358176e24160d652e4c822b3b8f234
+# Parent  37536e6e494d4180e243ddf08bd98e7e3eb1322b
+LFG all location
+
+diff -r 37536e6e494d4180e243ddf08bd98e7e3eb1322b -r 14b1cfd493358176e24160d652e4c822b3b8f234 src/server/game/Entities/Player/Player.cpp
+--- a/src/server/game/Entities/Player/Player.cpp    Sat Feb 18 13:30:49 2012 +0400
++++ b/src/server/game/Entities/Player/Player.cpp    Sat Feb 18 13:36:51 2012 +0400
+@@ -5554,6 +5554,10 @@
+   
+  bool Player::CanJoinConstantChannelInZone(ChatChannelsEntry const* channel, AreaTableEntry const* zone)
+  {
++    // Player can join LFG anywhere  
++    if (channel->Flags & CHANNEL_DBC_FLAG_LFG && sWorld->getBoolConfig(CONFIG_LFG_LOCATION_ALL))
++        return true;  
++
+      if (channel->Flags & CHANNEL_DBC_FLAG_ZONE_DEP && zone->flags & AREA_FLAG_ARENA_INSTANCE)
+          return false;
+   
+diff -r 37536e6e494d4180e243ddf08bd98e7e3eb1322b -r 14b1cfd493358176e24160d652e4c822b3b8f234 src/server/game/World/World.cpp
+--- a/src/server/game/World/World.cpp    Sat Feb 18 13:30:49 2012 +0400
++++ b/src/server/game/World/World.cpp    Sat Feb 18 13:36:51 2012 +0400
+@@ -1274,6 +1274,8 @@
+   
+      // MySQL ping time interval
+      m_int_configs[CONFIG_DB_PING_INTERVAL] = ConfigMgr::GetIntDefault("MaxPingTime", 30);
++  
++    m_bool_configs[CONFIG_LFG_LOCATION_ALL] = sConfigMgr->GetBoolDefault("LFG.Location.All", true);
+   
+      // misc
+      m_bool_configs[CONFIG_PDUMP_NO_PATHS] = ConfigMgr::GetBoolDefault("PlayerDump.DisallowPaths", true);
+diff -r 37536e6e494d4180e243ddf08bd98e7e3eb1322b -r 14b1cfd493358176e24160d652e4c822b3b8f234 src/server/game/World/World.h
+--- a/src/server/game/World/World.h    Sat Feb 18 13:30:49 2012 +0400
++++ b/src/server/game/World/World.h    Sat Feb 18 13:36:51 2012 +0400
+@@ -156,6 +156,7 @@
+      CONFIG_DUNGEON_FINDER_ENABLE,
+      CONFIG_AUTOBROADCAST,
+      CONFIG_ALLOW_TICKETS,
++    CONFIG_LFG_LOCATION_ALL,
+      CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
+      CONFIG_PRESERVE_CUSTOM_CHANNELS,
+      CONFIG_PDUMP_NO_PATHS,
+diff -r 37536e6e494d4180e243ddf08bd98e7e3eb1322b -r 14b1cfd493358176e24160d652e4c822b3b8f234 src/server/worldserver/worldserver.conf.dist
+--- a/src/server/worldserver/worldserver.conf.dist    Sat Feb 18 13:30:49 2012 +0400
++++ b/src/server/worldserver/worldserver.conf.dist    Sat Feb 18 13:36:51 2012 +0400
+@@ -2846,6 +2846,13 @@
+   
+  PlayerDump.DisallowOverwrite = 1
+   
++#  
++# Includes satellite to search for work elsewhere LFG
++# Default: 0 - Disable  
++# 1 - Enable  
++
++LFG.Location.All = 0
++
+  #
+  ###################################################################################################
